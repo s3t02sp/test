@@ -19,6 +19,12 @@ Comprehensive miss logging implementation for CS2 rage bot with spread tracking 
 3. Call render functions in your render loop
 4. Enable miss logging in config: `g_cfg->rage_bot.m_log_misses = true`
 
+### ⚠️ Fixing Linker Errors
+
+If you get linker error for `get_hitbox_name`:
+- **Quick fix**: Use `rage_bot_minimal.hpp` + `rage_bot_inline.cpp` (inline version)
+- **Proper fix**: See `FIX_LINKER_ERROR.md` or `РЕШЕНИЕ_ПРОБЛЕМЫ.txt` (Russian)
+
 ## Features
 
 ✅ **Spread Tracking** - Tracks weapon spread and inaccuracy for each shot  

@@ -1,0 +1,119 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                    РЕШЕНИЕ ОШИБКИ ЛИНКОВКИ                                 ║
+║            "неразрешенный внешний символ get_hitbox_name"                  ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+ПРОБЛЕМА:
+---------
+Ошибка: ссылка на неразрешенный внешний символ "private: ... get_hitbox_name"
+
+Компилятор видит функцию как private, хотя она должна быть public.
+
+
+РЕШЕНИЕ #1 (РЕКОМЕНДУЕТСЯ) - Полная пересборка:
+------------------------------------------------
+1. Откройте Visual Studio
+2. Build → Clean Solution
+3. Удалите папки: Debug/, Release/, x64/, .vs/
+4. Замените ваш rage_bot.hpp на файл из workspace/rage_bot.hpp
+5. Build → Rebuild Solution
+
+⚠️ ВАЖНО: Функции get_hitbox_name() и get_reason_string() ДОЛЖНЫ быть
+          в PUBLIC секции класса (строки 135-136 в rage_bot.hpp)
+
+
+РЕШЕНИЕ #2 (БЫСТРОЕ) - Используйте inline версию:
+--------------------------------------------------
+Если пересборка не помогает:
+
+1. Замените rage_bot.hpp на rage_bot_minimal.hpp
+   (переименуйте rage_bot_minimal.hpp → rage_bot.hpp)
+
+2. Замените rage_bot.cpp на rage_bot_inline.cpp
+   (переименуйте rage_bot_inline.cpp → rage_bot.cpp)
+
+3. Пересоберите проект
+
+ИЛИ вручную:
+
+В rage_bot.hpp сделайте функции inline прямо в классе:
+
+    class c_rage_bot {
+    public:
+        // ... другие функции ...
+        
+        inline std::string get_hitbox_name(int hitbox) {
+            switch (hitbox) {
+                case HITBOX_HEAD: return "Head";
+                case HITBOX_CHEST: return "Chest";
+                // ... остальные case
+                default: return "Unknown";
+            }
+        }
+        
+        inline std::string get_reason_string(miss_reason_e reason) {
+            switch (reason) {
+                case MISS_REASON_SPREAD: return "Spread/Inaccuracy";
+                // ... остальные case
+                default: return "Unknown";
+            }
+        }
+    };
+
+И УДАЛИТЕ эти функции из rage_bot.cpp (строки 794-829).
+
+
+РЕШЕНИЕ #3 - Проверка структуры класса:
+----------------------------------------
+Убедитесь, что в вашем rage_bot.hpp класс выглядит ТАК:
+
+class c_rage_bot {
+public:    // ← Здесь начинается public секция
+    void on_create_move();
+    void store_records();
+    void register_shot(const shot_info_t& shot_info);
+    void on_bullet_impact(const vec3_t& impact_pos);
+    void on_player_hurt(int victim_handle, int attacker_handle, int damage, int hitgroup);
+    
+    std::vector<miss_log_t>& get_miss_logs() { return m_miss_logs; }
+    void clear_miss_logs() { m_miss_logs.clear(); }
+    
+    // ⬇️ ЭТИ ДВЕ ФУНКЦИИ ДОЛЖНЫ БЫТЬ ЗДЕСЬ (В PUBLIC) ⬇️
+    std::string get_hitbox_name(int hitbox);
+    std::string get_reason_string(miss_reason_e reason);
+
+private:   // ← Здесь начинается private секция
+    void store_hitboxes();
+    // ... остальные приватные функции
+};
+
+
+ПРОВЕРКА:
+---------
+✓ Функции объявлены как public в .hpp файле
+✓ Функции реализованы в .cpp файле
+✓ Выполнена полная очистка и пересборка проекта
+✓ Нет кэшированных .obj файлов
+
+
+ДОПОЛНИТЕЛЬНЫЕ ФАЙЛЫ:
+---------------------
+FIX_LINKER_ERROR.md      - Подробные инструкции (на русском)
+rage_bot.hpp             - Правильная версия заголовка
+rage_bot.cpp             - Правильная версия реализации
+rage_bot_minimal.hpp     - Версия с inline функциями
+rage_bot_inline.cpp      - .cpp без get_hitbox_name/get_reason_string
+
+
+ЕСЛИ НИЧЕГО НЕ ПОМОГАЕТ:
+-------------------------
+1. Используйте inline версию (rage_bot_minimal.hpp + rage_bot_inline.cpp)
+2. Проверьте, что нет старых копий rage_bot.hpp в других папках проекта
+3. Убедитесь, что #include "rage_bot.hpp" указывает на правильный файл
+4. Попробуйте добавить this-> перед вызовами:
+   this->get_hitbox_name(hitbox)
+
+
+КОНТАКТНАЯ ИНФОРМАЦИЯ:
+----------------------
+Если проблема не решается, отправьте полный вывод ошибки компилятора.
