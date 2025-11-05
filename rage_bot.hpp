@@ -130,6 +130,10 @@ public:
     // Miss log
     std::vector<miss_log_t>& get_miss_logs() { return m_miss_logs; }
     void clear_miss_logs() { m_miss_logs.clear(); }
+    
+    // Miss log helpers (public for external use)
+    std::string get_hitbox_name(int hitbox);
+    std::string get_reason_string(miss_reason_e reason);
 
 private:
     void store_hitboxes();
@@ -157,13 +161,11 @@ private:
     int get_hitbox_from_menu(int hitbox);
     hitbox_data_t get_hitbox_data(c_cs_player_pawn* pawn, int hitbox);
     
-    // Miss log helpers
+    // Miss log helpers (private)
     void process_miss(const shot_info_t& shot_info, const vec3_t& impact_pos);
     miss_reason_e determine_miss_reason(const shot_info_t& shot_info, const vec3_t& impact_pos);
-    std::string get_hitbox_name(int hitbox);
-    std::string get_reason_string(miss_reason_e reason);
-
-private:
+    
+    // Member variables
     std::map<int, std::deque<lag_record_t>> m_lag_records;
     std::map<int, aim_target_t> m_aim_targets;
     std::vector<int> m_hitboxes;
