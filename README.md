@@ -17,9 +17,17 @@ A professional hit log system inspired by GameSense's design, featuring smooth a
 
 ## Files
 
+### Core Hit Log System
 - `hit_log.h` - Header file with structure definitions and class declaration
 - `hit_log.cpp` - Implementation of the hit log system
 - `example_usage.cpp` - Comprehensive usage examples
+
+### Miss Detection System
+- `miss_detection.cpp` - Full miss detection with all miss types (spread, resolver, occlusion, etc.)
+- `spread_detection_simple.cpp` - Simplified spread miss detection (recommended for beginners)
+- `weapon_spread_values.cpp` - Weapon-specific spread values and calibrated thresholds
+- `SPREAD_MISS_GUIDE.md` - Complete guide on detecting spread misses with visual examples
+- `QUICK_REFERENCE.md` - Quick copy-paste solutions and cheat sheet
 
 ## Quick Start
 
@@ -165,6 +173,48 @@ struct hit_log_entry
 2. **Add logs in your event handlers** (bullet impact, player hurt, etc.)
 3. **Configure position and limits** based on your UI layout
 4. **Use appropriate colors** to match your cheat's theme
+
+## Spread Miss Detection
+
+For detailed information on how to detect spread misses, see:
+- **⚡ [QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Quick cheat sheet with copy-paste solutions (start here!)
+- **📘 [SPREAD_MISS_GUIDE.md](SPREAD_MISS_GUIDE.md)** - Complete guide with visual examples
+- **🔧 [spread_detection_simple.cpp](spread_detection_simple.cpp)** - Simple implementation
+- **🎯 [weapon_spread_values.cpp](weapon_spread_values.cpp)** - Weapon-specific spread data and thresholds
+- **⚙️ [miss_detection.cpp](miss_detection.cpp)** - Advanced implementation with all miss types
+
+### Quick Example - Spread Miss Detection
+
+```cpp
+// 1. On weapon fire - save shot data
+void on_weapon_fire()
+{
+    shot_data shot;
+    shot.aim_pos = target_hitbox_position;
+    shot.shoot_pos = local->get_eye_position();
+    shot.weapon_spread = weapon->get_inaccuracy() + weapon->get_spread();
+    
+    g_miss_detector.register_shot(shot);
+}
+
+// 2. On bullet impact - check for miss
+void on_bullet_impact(Vector impact_pos)
+{
+    float distance = (impact_pos - shot.aim_pos).Length();
+    
+    // Spread miss if: 30-100 units away and high weapon spread
+    if (distance >= 30.0f && distance <= 100.0f && shot.weapon_spread > 0.005f)
+    {
+        g_hit_log.add_miss("enemy", "spread");
+    }
+}
+```
+
+### Miss Types Detected
+- ✅ **Spread** - Bullet deviation due to weapon inaccuracy
+- ✅ **Resolver** - Wrong body yaw prediction
+- ✅ **Occlusion** - Hit wall/object before target
+- ✅ **Prediction** - Movement prediction error
 
 ## Credits
 
